@@ -290,6 +290,25 @@
       word-wrap: break-word;
     }
 
+    /* Reply CTA under message */
+    .reply-cta {
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: #f9fafb;
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+    }
+
+    .reply-cta-text {
+      font-size: 11px;
+    }
+
     /* Create link UI (when no tea param) */
     .creator {
       margin-top: 12px;
@@ -505,6 +524,12 @@
           </div>
           <div class="message-text" id="messageText"></div>
         </article>
+
+        <!-- Inline CTA to share own tea -->
+        <div class="reply-cta" id="replyCta">
+          <span class="reply-cta-text">Got any tea of your own? Share your tea back 🫖</span>
+          <button class="btn btn-secondary" id="replyShareBtn">Share your tea</button>
+        </div>
       </section>
 
       <!-- Creator (only visible if no tea parameter) -->
@@ -581,6 +606,8 @@
     const toastText = document.getElementById("toastText");
     const pageTitle = document.getElementById("pageTitle");
     const pageSubtitle = document.getElementById("pageSubtitle");
+    const replyCta = document.getElementById("replyCta");
+    const replyShareBtn = document.getElementById("replyShareBtn");
 
     let teaMessage = "";
     let revealed = false;
@@ -603,6 +630,8 @@
       revealed = true;
       messageCardEl.classList.add("revealed");
       tapHint.textContent = "Tea revealed 🫖";
+      // Show inline CTA to share own tea
+      replyCta.style.display = "flex";
     }
 
     // On load: check if there's a ?tea= param
@@ -618,6 +647,8 @@
         creatorSection.style.display = "none";
         pageTitle.textContent = "Someone sent you some tea 👀";
         pageSubtitle.textContent = "Tap the cup to reveal the message they shared with you.";
+        // Keep reply CTA hidden until tea is revealed
+        replyCta.style.display = "none";
       } else {
         // No tea in URL → show creator section
         teaMessage = "";
@@ -625,6 +656,8 @@
         creatorSection.style.display = "block";
         pageTitle.textContent = "Create a tea link to share";
         pageSubtitle.textContent = "Write a message once, share the link on WhatsApp or Insta, and they’ll tap the cup to see it.";
+        // No reply CTA needed in pure creator mode
+        replyCta.style.display = "none";
       }
     })();
 
@@ -664,6 +697,16 @@
         () => showToast("Couldn’t copy, but the link is selected.")
       );
     });
+
+    // Reply CTA -> switch to creator mode on same page
+    replyShareBtn.addEventListener("click", () => {
+      creatorSection.style.display = "block";
+      pageTitle.textContent = "Create a tea link to share";
+      pageSubtitle.textContent = "Write a message once, share the link on WhatsApp or Insta, and they’ll tap the cup to see it.";
+      creatorInput.focus();
+      creatorSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   </script>
 </body>
 </html>
+```
