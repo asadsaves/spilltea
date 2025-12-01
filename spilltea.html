@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpillTea – Tap the Cup to Reveal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #f8f5f2;
+      --primary: #9ad0c2;
+      --accent: #ffb3c6;
+      --text: #222222;
+      --muted: #6b6b6b;
+      --card: #ffffff;
+      --border: #e3ded6;
+      --radius-xl: 24px;
+      --radius-full: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, #ffe5f0, transparent 60%),
+        radial-gradient(circle at bottom right, #d9f3ec, transparent 60%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+      padding: 18px 18px 20px;
+      backdrop-filter: blur(18px);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      font-size: 26px;
+    }
+
+    .brand-main {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: #f9fafb;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 540px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    /* Main layout */
+    .main {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding: 18px 12px 12px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 360px;
+    }
+
+    /* Big tea cup */
+    .cup-wrapper {
+      margin-top: 10px;
+      position: relative;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+      background: radial-gradient(circle at 30% 20%, #ffffff, #f5e8dc);
+    }
+
+    .cup-wrapper:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.4);
+    }
+
+    .cup-wrapper:active {
+      transform: translateY(-1px) scale(0.99);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.3);
+    }
+
+    .cup-inner {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffe1b5, #e29d6b);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 10px 20px rgba(0,0,0,0.18);
+    }
+
+    .cup-inner::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.6);
+    }
+
+    .cup-emoji {
+      font-size: 56px;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+    }
+
+    .cup-handle {
+      position: absolute;
+      right: -30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 12px solid #f5e8dc;
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      transform: rotate(20deg);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      background: transparent;
+    }
+
+    .vapour {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+
+    .steam {
+      width: 6px;
+      height: 30px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(to top, rgba(255,255,255,0), rgba(255,255,255,0.9));
+      opacity: 0.8;
+      animation: steamMove 1.8s infinite ease-in-out;
+    }
+
+    .steam:nth-child(2) {
+      animation-delay: 0.4s;
+      height: 34px;
+    }
+    .steam:nth-child(3) {
+      animation-delay: 0.8s;
+      height: 28px;
+    }
+
+    @keyframes steamMove {
+      0% { transform: translateY(6px); opacity: 0; }
+      25% { opacity: 0.9; }
+      100% { transform: translateY(-16px); opacity: 0; }
+    }
+
+    .tap-hint {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tap-hint-key {
+      border-radius: 6px;
+      padding: 2px 6px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: #f9fafb;
+      font-size: 10px;
+    }
+
+    /* Message card */
+    .message-card {
+      margin-top: 10px;
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      box-shadow: 0 14px 30px rgba(15,23,42,0.08);
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        max-height 0.3s ease-out,
+        opacity 0.22s ease-out,
+        transform 0.22s ease-out;
+    }
+
+    .message-card.revealed {
+      max-height: 300px; /* enough for a few lines */
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .message-label span.dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.45;
+      text-align: left;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Create link UI (when no tea param) */
+    .creator {
+      margin-top: 12px;
+      padding: 12px 12px 10px;
+      border-radius: 20px;
+      background: #f9fafb;
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .creator-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .creator-title span.badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: rgba(154, 208, 194, 0.35);
+      border: 1px solid rgba(154, 208, 194, 0.7);
+    }
+
+    .creator-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .creator textarea {
+      width: 100%;
+      min-height: 70px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 8px 9px;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      background: #ffffff;
+    }
+
+    .creator textarea:focus {
+      border-color: #111827;
+      box-shadow: 0 0 0 1px #1118271a;
+    }
+
+    .creator-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .note {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background 0.15s ease-out;
+    }
+
+    .btn-primary {
+      background: #111827;
+      color: #f9fafb;
+      box-shadow: 0 10px 24px rgba(15,23,42,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(15,23,42,0.5);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+      padding-inline: 10px;
+      font-size: 11px;
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(15,23,42,0.16);
+      background: #f9fafb;
+    }
+
+    .creator-output {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .creator-output-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .creator-output-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .creator-output-row input {
+      flex: 1;
+      min-width: 0;
+      font-size: 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .creator-output-row input:focus {
+      border-color: #111827;
+      box-shadow: 0 0 0 1px #1118271a;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(10px);
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      background: #111827;
+      color: #f9fafb;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+      z-index: 999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon">🫖</span>
+        <div>
+          <div class="brand-main">SpillTea</div>
+          <div class="brand-sub">Tap the cup to reveal the tea.</div>
+        </div>
+      </div>
+      <div class="pill">
+        Share link → open → tap cup → see message
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+      <section class="center">
+        <div class="title" id="pageTitle">Someone sent you some tea 👀</div>
+        <p class="subtitle" id="pageSubtitle">
+          Tap the cup to see what they wanted to tell you. Keep it kind, keep it cute.
+        </p>
+
+        <!-- Big cup -->
+        <button class="cup-wrapper" id="cupButton" type="button">
+          <div class="vapour">
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="steam"></div>
+          </div>
+          <div class="cup-inner">
+            <div class="cup-emoji">☕</div>
+          </div>
+          <div class="cup-handle"></div>
+        </button>
+
+        <div class="tap-hint" id="tapHint">
+          <span class="tap-hint-key">Tap</span>
+          <span>to reveal the tea</span>
+        </div>
+
+        <!-- Revealed message -->
+        <article class="message-card" id="messageCard">
+          <div class="message-label">
+            <span class="dot"></span>
+            The tea they shared with you
+          </div>
+          <div class="message-text" id="messageText"></div>
+        </article>
+      </section>
+
+      <!-- Creator (only visible if no tea parameter) -->
+      <section class="creator" id="creatorSection" style="display:none;">
+        <div class="creator-title">
+          Create a Tea Link to share
+          <span class="badge">WhatsApp / Insta / anywhere</span>
+        </div>
+
+        <div class="creator-row">
+          <textarea id="creatorInput"
+            placeholder="Type the message (tea) you want someone to see when they tap the cup..."></textarea>
+          <div class="creator-actions">
+            <button class="btn btn-primary" id="generateLinkBtn">
+              Generate link 🫖
+            </button>
+            <span class="note">
+              The message will be encoded in the URL. No server, just front-end.
+            </span>
+          </div>
+        </div>
+
+        <div class="creator-output" id="creatorOutput" style="display:none;">
+          <div class="creator-output-label">Share this link:</div>
+          <div class="creator-output-row">
+            <input type="text" readonly id="generatedLink" />
+            <button class="btn btn-secondary" id="copyLinkBtn">Copy</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span>🫖</span>
+    <span id="toastText">Link copied.</span>
+  </div>
+
+  <script>
+    // Helper to get URL param
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // Encode/decode message into URL safely using base64 + encodeURIComponent
+    function encodeTea(text) {
+      // base64 + URI safe
+      return encodeURIComponent(btoa(unescape(encodeURIComponent(text))));
+    }
+
+    function decodeTea(value) {
+      try {
+        const decoded = decodeURIComponent(value);
+        return decodeURIComponent(escape(atob(decoded)));
+      } catch (e) {
+        // Fallback: return raw if decode fails
+        return value || "";
+      }
+    }
+
+    const messageTextEl = document.getElementById("messageText");
+    const messageCardEl = document.getElementById("messageCard");
+    const cupButton = document.getElementById("cupButton");
+    const tapHint = document.getElementById("tapHint");
+    const creatorSection = document.getElementById("creatorSection");
+    const creatorInput = document.getElementById("creatorInput");
+    const generateLinkBtn = document.getElementById("generateLinkBtn");
+    const creatorOutput = document.getElementById("creatorOutput");
+    const generatedLinkInput = document.getElementById("generatedLink");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const toast = document.getElementById("toast");
+    const toastText = document.getElementById("toastText");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+
+    let teaMessage = "";
+    let revealed = false;
+
+    function showToast(msg) {
+      toastText.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1800);
+    }
+
+    function revealTea() {
+      if (!teaMessage) {
+        // If no tea in URL, just show hint
+        showToast("No tea in link. Scroll down to create one 🫖");
+        return;
+      }
+      if (revealed) return;
+      revealed = true;
+      messageCardEl.classList.add("revealed");
+      tapHint.textContent = "Tea revealed 🫖";
+    }
+
+    // On load: check if there's a ?tea= param
+    (function init() {
+      const rawTeaParam = getParam("tea");
+      if (rawTeaParam) {
+        teaMessage = decodeTea(rawTeaParam).trim();
+      }
+
+      if (teaMessage) {
+        // We have a tea message from URL
+        messageTextEl.textContent = teaMessage;
+        creatorSection.style.display = "none";
+        pageTitle.textContent = "Someone sent you some tea 👀";
+        pageSubtitle.textContent = "Tap the cup to reveal the message they shared with you.";
+      } else {
+        // No tea in URL → show creator section
+        teaMessage = "";
+        messageTextEl.textContent = "No tea in this link yet. Scroll down to create one!";
+        creatorSection.style.display = "block";
+        pageTitle.textContent = "Create a tea link to share";
+        pageSubtitle.textContent = "Write a message once, share the link on WhatsApp or Insta, and they’ll tap the cup to see it.";
+      }
+    })();
+
+    // Cup click
+    cupButton.addEventListener("click", revealTea);
+
+    // Keyboard: Enter/Space on cup
+    cupButton.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        revealTea();
+      }
+    });
+
+    // Generate link
+    generateLinkBtn.addEventListener("click", () => {
+      const text = creatorInput.value.trim();
+      if (!text) {
+        showToast("Write some tea before generating a link 👀");
+        return;
+      }
+      const encoded = encodeTea(text);
+      const url = window.location.origin + window.location.pathname + "?tea=" + encoded;
+      generatedLinkInput.value = url;
+      creatorOutput.style.display = "flex";
+      showToast("Tea link generated. You can share this now 🫖");
+    });
+
+    // Copy link
+    copyLinkBtn.addEventListener("click", () => {
+      const value = generatedLinkInput.value;
+      if (!value) return;
+      generatedLinkInput.select();
+      generatedLinkInput.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(value).then(
+        () => showToast("Link copied. Paste it in WhatsApp / Insta 💬"),
+        () => showToast("Couldn’t copy, but the link is selected.")
+      );
+    });
+  </script>
+</body>
+</html>
